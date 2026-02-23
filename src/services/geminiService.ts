@@ -49,12 +49,17 @@ export async function getFullStory(book: Book): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Tulis naratif "kisah penuh" yang terperinci, mendalam, dan mencengkam dalam Bahasa Malaysia untuk buku penyiasatan remaja Malaysia "${book.title}" oleh ${book.author}. 
-      Cerita harus mengikut gaya siri misteri remaja klasik seperti "Siri Hadi". 
-      Fokus pada Hadi dan rakan-rakannya menyelesaikan misteri dalam latar tempatan Malaysia. 
-      Sertakan elemen budaya Malaysia, slanga (seperti 'lah', 'jom', 'pak cik'), dan lokasi khusus yang dinyatakan dalam deskripsi.
-      Sertakan permulaan, langkah penyiasatan utama oleh remaja tersebut, titik perubahan, dan peleraian. 
-      Formatkan dalam 4-5 perenggan yang padat.`,
+      contents: `Tuliskan "Kisah Penuh" yang sangat terperinci dan mendalam untuk novel penyiasatan remaja Malaysia bertajuk "${book.title}" oleh ${book.author}. 
+      
+      Arahan Penting:
+      1. Jangan tulis ringkasan. Tuliskan kronologi lengkap cerita dari Bab 1 hingga penamat.
+      2. Gunakan gaya penceritaan "Siri Hadi" yang klasik.
+      3. Bahagikan kepada bahagian: "Permulaan Kes", "Penyiasatan Bermula", "Petunjuk Misteri", "Kemuncak Konflik", dan "Peleraian & Penangkapan".
+      4. Sertakan butiran tentang bagaimana Hadi dan rakan-rakannya (seperti Kamal atau rakan lain) menggunakan logik dan keberanian mereka.
+      5. Gunakan Bahasa Malaysia yang kaya dengan suasana tempatan (latar kampung/bandar, budaya, dan dialog santai).
+      6. Pastikan pembaca tahu dengan jelas siapa dalangnya dan bagaimana mereka ditangkap.
+      
+      Sasaran panjang: Sekurang-kurangnya 800-1000 patah perkataan.`,
     });
     return response.text || "Kandungan cerita tidak tersedia.";
   } catch (error) {
