@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Search, Sparkles, Book as BookIcon, BookOpen, Info, Star, X, Bookmark, Library } from "lucide-react";
 import { useState, useEffect } from "react";
 import { GLOBAL_BOOKS, Book } from "./constants";
-import { getAIRecommendations, getBookSummary, getFullStory } from "./services/geminiService";
+import { getAIRecommendations, getBookSummary, getFullStory, generateBookCover } from "./services/geminiService";
 import { cn } from "./lib/utils";
 
 // --- Components ---
@@ -21,13 +21,13 @@ const Navbar = () => {
         <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
           <Library className="text-white w-6 h-6" />
         </div>
-        <span className="text-2xl font-bold tracking-tighter italic font-serif">Wira Investigation</span>
+        <span className="text-2xl font-bold tracking-tighter italic font-serif">Wira Penyiasat</span>
       </div>
       <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-        <button onClick={() => scrollToSection('top-cases')} className="hover:text-white transition-colors cursor-pointer">Teen Detectives</button>
-        <button onClick={() => scrollToSection('regional-mysteries')} className="hover:text-white transition-colors cursor-pointer">Local Mysteries</button>
-        <button onClick={() => scrollToSection('ai-discovery')} className="hover:text-white transition-colors cursor-pointer">Case Files</button>
-        <button onClick={() => scrollToSection('footer')} className="hover:text-white transition-colors cursor-pointer">Archive</button>
+        <button onClick={() => scrollToSection('top-cases')} className="hover:text-white transition-colors cursor-pointer">Siri Hadi</button>
+        <button onClick={() => scrollToSection('regional-mysteries')} className="hover:text-white transition-colors cursor-pointer">Kes Klasik</button>
+        <button onClick={() => scrollToSection('ai-discovery')} className="hover:text-white transition-colors cursor-pointer">Fail Kes</button>
+        <button onClick={() => scrollToSection('footer')} className="hover:text-white transition-colors cursor-pointer">Arkib</button>
       </div>
       <div className="flex items-center gap-4">
         <button onClick={() => scrollToSection('ai-discovery')} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -72,7 +72,7 @@ const ContentRow = ({ id, title, books, onBookClick }: { id?: string; title: str
     <div className="px-12 flex items-center justify-between">
       <h2 className="text-xl font-serif italic font-bold tracking-tight">{title}</h2>
       <button className="text-xs text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors">
-        View All
+        Lihat Semua
       </button>
     </div>
     <div className="flex gap-6 overflow-x-auto px-12 pb-8 no-scrollbar mask-fade-x">
@@ -146,17 +146,17 @@ const Modal = ({ book, onClose, onRead }: { book: Book | null; onClose: () => vo
               </div>
               <h2 className="text-4xl font-serif italic font-bold leading-tight">{book.title}</h2>
               <p className="text-white/80 font-medium text-lg mt-1 italic">{book.author}</p>
-              <p className="text-white/60 font-mono text-xs mt-2 uppercase tracking-widest">{book.genre} • {book.pages} Pages</p>
+              <p className="text-white/60 font-mono text-xs mt-2 uppercase tracking-widest">{book.genre} • {book.pages} Muka Surat</p>
             </div>
 
             <div className="space-y-4">
               <div className="p-4 bg-white/5 rounded-xl border border-white/10">
                 <div className="flex items-center gap-2 mb-2 text-brand-primary">
                   <Sparkles className="w-4 h-4" />
-                  <span className="text-[10px] uppercase font-bold tracking-widest">AI Literary Insight</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest">Wawasan Sastera AI</span>
                 </div>
                 <p className="text-sm leading-relaxed italic text-white/90">
-                  {loading ? "Analyzing prose..." : summary}
+                  {loading ? "Menganalisis prosa..." : summary}
                 </p>
               </div>
               <p className="text-sm text-white/70 leading-relaxed">
@@ -170,11 +170,11 @@ const Modal = ({ book, onClose, onRead }: { book: Book | null; onClose: () => vo
                 className="flex-1 bg-white text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-primary hover:text-white transition-all"
               >
                 <BookOpen className="w-5 h-5" />
-                Start Reading
+                Mula Membaca
               </button>
               <button className="px-6 border border-white/20 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2">
                 <Bookmark className="w-4 h-4" />
-                Save
+                Simpan
               </button>
             </div>
           </div>
@@ -206,13 +206,13 @@ const AIRecommender = ({ id, onBookClick }: { id?: string; onBookClick: (b: Book
         <div className="relative z-10 max-w-2xl space-y-6">
           <div className="flex items-center gap-3 text-brand-primary">
             <Sparkles className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em]">AI Detective Assistant</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em]">Pembantu Detektif AI</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-serif italic font-bold leading-tight">
-            Which Malaysian mystery will you solve?
+            Misteri Siri Hadi mana yang ingin anda selesaikan?
           </h2>
           <p className="text-white/60 text-lg">
-            Describe a location in Malaysia or a strange event, and our AI will find the teen investigation file for you.
+            Gambarkan lokasi atau kejadian aneh, dan AI kami akan mendapatkan fail penyiasatan remaja klasik untuk anda.
           </p>
 
           <form onSubmit={handleSearch} className="flex gap-3">
@@ -220,14 +220,14 @@ const AIRecommender = ({ id, onBookClick }: { id?: string; onBookClick: (b: Book
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. 'A haunting mystery set in a library' or 'A sweeping family saga from Africa'"
+              placeholder="cth: 'Misteri di perpustakaan lama' atau 'Kejadian aneh di kampung'"
               className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all placeholder:text-white/20"
             />
             <button
               disabled={isSearching}
               className="bg-brand-primary hover:bg-orange-600 disabled:opacity-50 text-white font-bold px-8 rounded-2xl transition-all flex items-center gap-2"
             >
-              {isSearching ? "Searching..." : "Discover"}
+              {isSearching ? "Mencari..." : "Temui"}
             </button>
           </form>
 
@@ -238,7 +238,7 @@ const AIRecommender = ({ id, onBookClick }: { id?: string; onBookClick: (b: Book
                 animate={{ opacity: 1, y: 0 }}
                 className="pt-8 space-y-4"
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-white/40">Curated for you</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-white/40">Dikurasi untuk anda</p>
                 <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
                   {results.map((book) => (
                     <BookCard key={book.id} book={book} onClick={() => onBookClick(book)} />
@@ -256,12 +256,36 @@ const AIRecommender = ({ id, onBookClick }: { id?: string; onBookClick: (b: Book
 // --- Main App ---
 
 export default function App() {
+  const [books, setBooks] = useState<Book[]>(GLOBAL_BOOKS);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [readingBook, setReadingBook] = useState<Book | null>(null);
-  const heroBook = GLOBAL_BOOKS[0];
+  const [isGeneratingCovers, setIsGeneratingCovers] = useState(false);
+
+  useEffect(() => {
+    const updateCovers = async () => {
+      setIsGeneratingCovers(true);
+      const updatedBooks = await Promise.all(
+        GLOBAL_BOOKS.map(async (book) => {
+          const realCover = await generateBookCover(book);
+          return realCover ? { ...book, cover: realCover } : book;
+        })
+      );
+      setBooks(updatedBooks);
+      setIsGeneratingCovers(false);
+    };
+    updateCovers();
+  }, []);
+
+  const heroBook = books[0];
 
   return (
     <div className="min-h-screen relative">
+      {isGeneratingCovers && (
+        <div className="fixed top-20 right-6 z-[60] glass px-4 py-2 rounded-full flex items-center gap-3 animate-pulse">
+          <Sparkles className="w-4 h-4 text-brand-primary" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Menjana Kulit Buku Realistik...</span>
+        </div>
+      )}
       <div className="atmosphere fixed inset-0" />
       
       <Navbar />
@@ -296,7 +320,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-4">
                   <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
-                    Prime Case • {heroBook.country}
+                    Kes Utama • {heroBook.country}
                   </span>
                   <div className="flex items-center gap-1 text-yellow-400">
                     <Star className="w-4 h-4 fill-current" />
@@ -306,7 +330,7 @@ export default function App() {
                 <h1 className="text-6xl md:text-8xl font-serif italic font-bold leading-[0.9] tracking-tighter">
                   {heroBook.title}
                 </h1>
-                <p className="text-2xl text-white/80 italic font-serif">by {heroBook.author}</p>
+                <p className="text-2xl text-white/80 italic font-serif">oleh {heroBook.author}</p>
                 <p className="text-lg text-white/60 max-w-xl leading-relaxed">
                   {heroBook.description}
                 </p>
@@ -323,14 +347,14 @@ export default function App() {
                   className="bg-white text-black font-bold px-10 py-4 rounded-2xl flex items-center gap-3 hover:bg-brand-primary hover:text-white transition-all group"
                 >
                   <BookOpen className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                  Read Now
+                  Baca Sekarang
                 </button>
                 <button
                   onClick={() => setSelectedBook(heroBook)}
                   className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold px-10 py-4 rounded-2xl flex items-center gap-3 hover:bg-white/20 transition-all"
                 >
                   <Info className="w-6 h-6" />
-                  Details
+                  Butiran
                 </button>
               </motion.div>
             </div>
@@ -342,8 +366,8 @@ export default function App() {
       <div className="relative z-10 -mt-20 space-y-12 pb-24">
         <ContentRow
           id="top-cases"
-          title="Top Malaysian Teen Cases"
-          books={GLOBAL_BOOKS.slice(0, 3)}
+          title="Klasik Siri Hadi"
+          books={books.slice(0, 3)}
           onBookClick={setSelectedBook}
         />
         
@@ -351,8 +375,8 @@ export default function App() {
 
         <ContentRow
           id="regional-mysteries"
-          title="Regional Mysteries"
-          books={GLOBAL_BOOKS.slice(3)}
+          title="Misteri Remaja Klasik"
+          books={books.slice(3)}
           onBookClick={setSelectedBook}
         />
       </div>
@@ -376,16 +400,16 @@ export default function App() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-2">
             <Library className="text-brand-primary w-6 h-6" />
-            <span className="text-xl font-bold tracking-tighter italic font-serif">Wira Investigation</span>
+            <span className="text-xl font-bold tracking-tighter italic font-serif">Wira Penyiasat</span>
           </div>
           <div className="flex gap-8 text-xs font-bold uppercase tracking-widest text-white/40">
-            <a href="#" className="hover:text-white transition-colors">Archive</a>
-            <a href="#" className="hover:text-white transition-colors">Catalog</a>
-            <a href="#" className="hover:text-white transition-colors">Support</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <a href="#" className="hover:text-white transition-colors">Arkib</a>
+            <a href="#" className="hover:text-white transition-colors">Katalog</a>
+            <a href="#" className="hover:text-white transition-colors">Sokongan</a>
+            <a href="#" className="hover:text-white transition-colors">Hubungi</a>
           </div>
           <p className="text-[10px] text-white/20 uppercase tracking-widest">
-            © 2026 Lumina Literary. All rights reserved.
+            © 2026 Wira Penyiasat. Hak cipta terpelihara.
           </p>
         </div>
       </footer>
@@ -420,19 +444,19 @@ const ReadingView = ({ book, onClose }: { book: Book; onClose: () => void }) => 
           className="fixed top-8 left-8 p-3 hover:bg-black/5 rounded-full transition-colors flex items-center gap-2 text-sm font-bold uppercase tracking-widest"
         >
           <X className="w-5 h-5" />
-          Close Reader
+          Tutup Pembaca
         </button>
 
         <header className="text-center space-y-4 border-b border-black/10 pb-12">
           <h1 className="text-5xl font-serif italic font-bold">{book.title}</h1>
-          <p className="text-xl font-serif text-black/60">by {book.author}</p>
+          <p className="text-xl font-serif text-black/60">oleh {book.author}</p>
         </header>
 
         <article className="prose prose-lg max-w-none font-serif leading-relaxed text-xl space-y-8">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 space-y-4">
               <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-black/40 font-mono text-xs uppercase tracking-widest">Reconstructing the investigation...</p>
+              <p className="text-black/40 font-mono text-xs uppercase tracking-widest">Membina semula penyiasatan...</p>
             </div>
           ) : (
             <div className="whitespace-pre-wrap">
@@ -444,7 +468,7 @@ const ReadingView = ({ book, onClose }: { book: Book; onClose: () => void }) => 
             <div className="w-24 h-px bg-black/20" />
           </div>
           <p className="text-center italic text-black/40">
-            End of the Investigation Record.
+            Tamat Rekod Penyiasatan.
           </p>
         </article>
       </div>

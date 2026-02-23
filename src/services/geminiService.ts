@@ -7,13 +7,13 @@ export async function getAIRecommendations(query: string): Promise<Book[]> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `User is looking for: "${query}". 
-      Based on the following catalog of global books, return a list of IDs for the top 3 most relevant books.
+      contents: `Pengguna sedang mencari: "${query}". 
+      Berdasarkan katalog buku penyiasatan Malaysia berikut, kembalikan senarai ID untuk 3 buku yang paling relevan.
       
-      Catalog:
+      Katalog:
       ${JSON.stringify(GLOBAL_BOOKS.map(b => ({ id: b.id, title: b.title, author: b.author, description: b.description, country: b.country, genre: b.genre })))}
       
-      Return ONLY a JSON array of strings (IDs).`,
+      Kembalikan HANYA array JSON string (ID).`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -35,9 +35,9 @@ export async function getBookSummary(book: Book): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Provide a brief, atmospheric, and enticing 2-sentence summary for the book "${book.title}" by ${book.author} from ${book.country}. 
-      Genre: ${book.genre}. Original description: ${book.description}. 
-      Make it sound like a literary review highlight.`,
+      contents: `Berikan ringkasan 2 ayat yang ringkas, menarik, dan penuh suasana dalam Bahasa Malaysia untuk buku "${book.title}" oleh ${book.author}. 
+      Genre: ${book.genre}. Deskripsi asal: ${book.description}. 
+      Jadikan ia kedengaran seperti ulasan sastera yang hebat.`,
     });
     return response.text || book.description;
   } catch (error) {
@@ -49,15 +49,50 @@ export async function getFullStory(book: Book): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Write a detailed, immersive, and gripping narrative summary of the "full story" for the Malaysian teen investigation book "${book.title}" by ${book.author}. 
-      The story should focus on a group of Malaysian teenagers solving a mystery. 
-      Include local Malaysian cultural elements, slang (like 'lah', 'jom'), and specific locations mentioned in the description.
-      Include the setup, the key investigation steps taken by the teens, the turning point, and the resolution. 
-      Format it in 4-5 substantial paragraphs.`,
+      contents: `Tulis naratif "kisah penuh" yang terperinci, mendalam, dan mencengkam dalam Bahasa Malaysia untuk buku penyiasatan remaja Malaysia "${book.title}" oleh ${book.author}. 
+      Cerita harus mengikut gaya siri misteri remaja klasik seperti "Siri Hadi". 
+      Fokus pada Hadi dan rakan-rakannya menyelesaikan misteri dalam latar tempatan Malaysia. 
+      Sertakan elemen budaya Malaysia, slanga (seperti 'lah', 'jom', 'pak cik'), dan lokasi khusus yang dinyatakan dalam deskripsi.
+      Sertakan permulaan, langkah penyiasatan utama oleh remaja tersebut, titik perubahan, dan peleraian. 
+      Formatkan dalam 4-5 perenggan yang padat.`,
     });
-    return response.text || "Story content unavailable.";
+    return response.text || "Kandungan cerita tidak tersedia.";
   } catch (error) {
     console.error("Full Story Generation Error:", error);
-    return "Failed to load the full story.";
+    return "Gagal memuatkan kisah penuh.";
+  }
+}
+
+export async function generateBookCover(book: Book): Promise<string | null> {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: `Kulit buku realistik untuk novel penyiasatan remaja Malaysia bertajuk "${book.title}" oleh ${book.author}. 
+            Kulit buku harus menampilkan gaya ilustrasi Malaysia klasik tahun 90-an. 
+            Elemen visual: ${book.description}. 
+            Tajuk dan nama pengarang harus kelihatan jelas dalam fon vintaj yang tebal. 
+            Latar belakang harus kelihatan seperti kampung atau bandar di Malaysia.`,
+          },
+        ],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "3:4",
+        },
+      },
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Image Generation Error:", error);
+    return null;
   }
 }
