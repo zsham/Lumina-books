@@ -7,28 +7,37 @@ import { cn } from "./lib/utils";
 
 // --- Components ---
 
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
-    <div className="flex items-center gap-2">
-      <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
-        <Library className="text-white w-6 h-6" />
+const Navbar = () => {
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
+          <Library className="text-white w-6 h-6" />
+        </div>
+        <span className="text-2xl font-bold tracking-tighter italic font-serif">Wira Investigation</span>
       </div>
-      <span className="text-2xl font-bold tracking-tighter italic font-serif">Investigation</span>
-    </div>
-    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-      <a href="#" className="hover:text-white transition-colors">Cold Cases</a>
-      <a href="#" className="hover:text-white transition-colors">Detectives</a>
-      <a href="#" className="hover:text-white transition-colors">Evidence</a>
-      <a href="#" className="hover:text-white transition-colors">Archive</a>
-    </div>
-    <div className="flex items-center gap-4">
-      <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-        <Search className="w-5 h-5" />
-      </button>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-primary to-orange-400 border border-white/20" />
-    </div>
-  </nav>
-);
+      <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+        <button onClick={() => scrollToSection('top-cases')} className="hover:text-white transition-colors cursor-pointer">Teen Detectives</button>
+        <button onClick={() => scrollToSection('regional-mysteries')} className="hover:text-white transition-colors cursor-pointer">Local Mysteries</button>
+        <button onClick={() => scrollToSection('ai-discovery')} className="hover:text-white transition-colors cursor-pointer">Case Files</button>
+        <button onClick={() => scrollToSection('footer')} className="hover:text-white transition-colors cursor-pointer">Archive</button>
+      </div>
+      <div className="flex items-center gap-4">
+        <button onClick={() => scrollToSection('ai-discovery')} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <Search className="w-5 h-5" />
+        </button>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-primary to-orange-400 border border-white/20" />
+      </div>
+    </nav>
+  );
+};
 
 const BookCard = ({ book, onClick }: { book: Book; onClick: () => void }) => (
   <motion.div
@@ -58,8 +67,8 @@ const BookCard = ({ book, onClick }: { book: Book; onClick: () => void }) => (
   </motion.div>
 );
 
-const ContentRow = ({ title, books, onBookClick }: { title: string; books: Book[]; onBookClick: (b: Book) => void }) => (
-  <div className="space-y-4 py-6">
+const ContentRow = ({ id, title, books, onBookClick }: { id?: string; title: string; books: Book[]; onBookClick: (b: Book) => void }) => (
+  <div id={id} className="space-y-4 py-6">
     <div className="px-12 flex items-center justify-between">
       <h2 className="text-xl font-serif italic font-bold tracking-tight">{title}</h2>
       <button className="text-xs text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors">
@@ -175,7 +184,7 @@ const Modal = ({ book, onClose, onRead }: { book: Book | null; onClose: () => vo
   );
 };
 
-const AIRecommender = ({ onBookClick }: { onBookClick: (b: Book) => void }) => {
+const AIRecommender = ({ id, onBookClick }: { id?: string; onBookClick: (b: Book) => void }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Book[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -190,20 +199,20 @@ const AIRecommender = ({ onBookClick }: { onBookClick: (b: Book) => void }) => {
   };
 
   return (
-    <div className="px-12 py-12">
+    <div id={id} className="px-12 py-12">
       <div className="glass rounded-3xl p-8 md:p-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/10 blur-[100px] -mr-48 -mt-48 rounded-full" />
         
         <div className="relative z-10 max-w-2xl space-y-6">
           <div className="flex items-center gap-3 text-brand-primary">
             <Sparkles className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em]">AI Case Analyst</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em]">AI Detective Assistant</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-serif italic font-bold leading-tight">
-            Which mystery haunts you?
+            Which Malaysian mystery will you solve?
           </h2>
           <p className="text-white/60 text-lg">
-            Describe a crime, a setting, or a clue, and our AI will retrieve the full case file for your investigation.
+            Describe a location in Malaysia or a strange event, and our AI will find the teen investigation file for you.
           </p>
 
           <form onSubmit={handleSearch} className="flex gap-3">
@@ -332,15 +341,17 @@ export default function App() {
       {/* Content Sections */}
       <div className="relative z-10 -mt-20 space-y-12 pb-24">
         <ContentRow
-          title="Classic Investigations"
+          id="top-cases"
+          title="Top Malaysian Teen Cases"
           books={GLOBAL_BOOKS.slice(0, 3)}
           onBookClick={setSelectedBook}
         />
         
-        <AIRecommender onBookClick={setSelectedBook} />
+        <AIRecommender id="ai-discovery" onBookClick={setSelectedBook} />
 
         <ContentRow
-          title="Modern Noir & Cold Cases"
+          id="regional-mysteries"
+          title="Regional Mysteries"
           books={GLOBAL_BOOKS.slice(3)}
           onBookClick={setSelectedBook}
         />
@@ -361,11 +372,11 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <footer className="relative z-10 px-12 py-12 border-t border-white/5 bg-black/40 backdrop-blur-md">
+      <footer id="footer" className="relative z-10 px-12 py-12 border-t border-white/5 bg-black/40 backdrop-blur-md">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-2">
             <Library className="text-brand-primary w-6 h-6" />
-            <span className="text-xl font-bold tracking-tighter italic font-serif">Investigation Chronicles</span>
+            <span className="text-xl font-bold tracking-tighter italic font-serif">Wira Investigation</span>
           </div>
           <div className="flex gap-8 text-xs font-bold uppercase tracking-widest text-white/40">
             <a href="#" className="hover:text-white transition-colors">Archive</a>

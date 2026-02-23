@@ -49,9 +49,10 @@ export async function getFullStory(book: Book): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Write a detailed, immersive, and gripping narrative summary of the "full story" for the investigation book "${book.title}" by ${book.author}. 
-      Include the setup, the key investigation steps, the turning point, and the resolution. 
-      Maintain a tone appropriate for a ${book.genre} novel. 
+      contents: `Write a detailed, immersive, and gripping narrative summary of the "full story" for the Malaysian teen investigation book "${book.title}" by ${book.author}. 
+      The story should focus on a group of Malaysian teenagers solving a mystery. 
+      Include local Malaysian cultural elements, slang (like 'lah', 'jom'), and specific locations mentioned in the description.
+      Include the setup, the key investigation steps taken by the teens, the turning point, and the resolution. 
       Format it in 4-5 substantial paragraphs.`,
     });
     return response.text || "Story content unavailable.";
