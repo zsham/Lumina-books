@@ -44,3 +44,19 @@ export async function getBookSummary(book: Book): Promise<string> {
     return book.description;
   }
 }
+
+export async function getFullStory(book: Book): Promise<string> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Write a detailed, immersive, and gripping narrative summary of the "full story" for the investigation book "${book.title}" by ${book.author}. 
+      Include the setup, the key investigation steps, the turning point, and the resolution. 
+      Maintain a tone appropriate for a ${book.genre} novel. 
+      Format it in 4-5 substantial paragraphs.`,
+    });
+    return response.text || "Story content unavailable.";
+  } catch (error) {
+    console.error("Full Story Generation Error:", error);
+    return "Failed to load the full story.";
+  }
+}

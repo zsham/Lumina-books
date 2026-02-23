@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Search, Sparkles, Book as BookIcon, BookOpen, Info, Star, X, Bookmark, Library } from "lucide-react";
 import { useState, useEffect } from "react";
 import { GLOBAL_BOOKS, Book } from "./constants";
-import { getAIRecommendations, getBookSummary } from "./services/geminiService";
+import { getAIRecommendations, getBookSummary, getFullStory } from "./services/geminiService";
 import { cn } from "./lib/utils";
 
 // --- Components ---
@@ -13,13 +13,13 @@ const Navbar = () => (
       <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
         <Library className="text-white w-6 h-6" />
       </div>
-      <span className="text-2xl font-bold tracking-tighter italic font-serif">Lumina</span>
+      <span className="text-2xl font-bold tracking-tighter italic font-serif">Investigation</span>
     </div>
     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-      <a href="#" className="hover:text-white transition-colors">Library</a>
-      <a href="#" className="hover:text-white transition-colors">Authors</a>
-      <a href="#" className="hover:text-white transition-colors">Genres</a>
-      <a href="#" className="hover:text-white transition-colors">Reading List</a>
+      <a href="#" className="hover:text-white transition-colors">Cold Cases</a>
+      <a href="#" className="hover:text-white transition-colors">Detectives</a>
+      <a href="#" className="hover:text-white transition-colors">Evidence</a>
+      <a href="#" className="hover:text-white transition-colors">Archive</a>
     </div>
     <div className="flex items-center gap-4">
       <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -197,13 +197,13 @@ const AIRecommender = ({ onBookClick }: { onBookClick: (b: Book) => void }) => {
         <div className="relative z-10 max-w-2xl space-y-6">
           <div className="flex items-center gap-3 text-brand-primary">
             <Sparkles className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em]">AI Librarian</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em]">AI Case Analyst</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-serif italic font-bold leading-tight">
-            What story calls to you?
+            Which mystery haunts you?
           </h2>
           <p className="text-white/60 text-lg">
-            Describe a mood, a historical period, or a philosophical question, and our AI will find your next great read.
+            Describe a crime, a setting, or a clue, and our AI will retrieve the full case file for your investigation.
           </p>
 
           <form onSubmit={handleSearch} className="flex gap-3">
@@ -287,7 +287,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-4">
                   <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
-                    Featured Work • {heroBook.country}
+                    Prime Case • {heroBook.country}
                   </span>
                   <div className="flex items-center gap-1 text-yellow-400">
                     <Star className="w-4 h-4 fill-current" />
@@ -332,16 +332,16 @@ export default function App() {
       {/* Content Sections */}
       <div className="relative z-10 -mt-20 space-y-12 pb-24">
         <ContentRow
-          title="Modern Classics"
-          books={GLOBAL_BOOKS.slice(0, 4)}
+          title="Classic Investigations"
+          books={GLOBAL_BOOKS.slice(0, 3)}
           onBookClick={setSelectedBook}
         />
         
         <AIRecommender onBookClick={setSelectedBook} />
 
         <ContentRow
-          title="Philosophical Journeys"
-          books={GLOBAL_BOOKS.slice(4)}
+          title="Modern Noir & Cold Cases"
+          books={GLOBAL_BOOKS.slice(3)}
           onBookClick={setSelectedBook}
         />
       </div>
@@ -365,7 +365,7 @@ export default function App() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-2">
             <Library className="text-brand-primary w-6 h-6" />
-            <span className="text-xl font-bold tracking-tighter italic font-serif">Lumina</span>
+            <span className="text-xl font-bold tracking-tighter italic font-serif">Investigation Chronicles</span>
           </div>
           <div className="flex gap-8 text-xs font-bold uppercase tracking-widest text-white/40">
             <a href="#" className="hover:text-white transition-colors">Archive</a>
@@ -382,44 +382,61 @@ export default function App() {
   );
 }
 
-const ReadingView = ({ book, onClose }: { book: Book; onClose: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 50 }}
-    className="fixed inset-0 z-[200] bg-[#f5f2ed] text-[#1a1a1a] overflow-y-auto"
-  >
-    <div className="max-w-3xl mx-auto px-8 py-24 space-y-12">
-      <button 
-        onClick={onClose}
-        className="fixed top-8 left-8 p-3 hover:bg-black/5 rounded-full transition-colors flex items-center gap-2 text-sm font-bold uppercase tracking-widest"
-      >
-        <X className="w-5 h-5" />
-        Close Reader
-      </button>
+const ReadingView = ({ book, onClose }: { book: Book; onClose: () => void }) => {
+  const [fullStory, setFullStory] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
-      <header className="text-center space-y-4 border-b border-black/10 pb-12">
-        <h1 className="text-5xl font-serif italic font-bold">{book.title}</h1>
-        <p className="text-xl font-serif text-black/60">by {book.author}</p>
-      </header>
+  useEffect(() => {
+    const fetchStory = async () => {
+      setLoading(true);
+      const story = await getFullStory(book);
+      setFullStory(story);
+      setLoading(false);
+    };
+    fetchStory();
+  }, [book]);
 
-      <article className="prose prose-lg max-w-none font-serif leading-relaxed text-xl space-y-8">
-        <p className="first-letter:text-7xl first-letter:font-bold first-letter:mr-3 first-letter:float-left">
-          {book.description}
-        </p>
-        <p>
-          The air in the library was thick with the scent of old paper and forgotten dreams. As the sun dipped below the horizon, casting long, golden shadows across the mahogany shelves, the silence was broken only by the soft rustle of pages.
-        </p>
-        <p>
-          In this corner of the world, time seemed to slow down. Every book held a universe, and every reader was a traveler. The journey through {book.title} was just beginning, a path paved with words that echoed through the halls of history and the chambers of the heart.
-        </p>
-        <div className="py-12 flex justify-center">
-          <div className="w-24 h-px bg-black/20" />
-        </div>
-        <p className="text-center italic text-black/40">
-          (This is a preview mode. The full text of this global masterpiece is available in your digital collection.)
-        </p>
-      </article>
-    </div>
-  </motion.div>
-);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      className="fixed inset-0 z-[200] bg-[#f5f2ed] text-[#1a1a1a] overflow-y-auto"
+    >
+      <div className="max-w-3xl mx-auto px-8 py-24 space-y-12">
+        <button 
+          onClick={onClose}
+          className="fixed top-8 left-8 p-3 hover:bg-black/5 rounded-full transition-colors flex items-center gap-2 text-sm font-bold uppercase tracking-widest"
+        >
+          <X className="w-5 h-5" />
+          Close Reader
+        </button>
+
+        <header className="text-center space-y-4 border-b border-black/10 pb-12">
+          <h1 className="text-5xl font-serif italic font-bold">{book.title}</h1>
+          <p className="text-xl font-serif text-black/60">by {book.author}</p>
+        </header>
+
+        <article className="prose prose-lg max-w-none font-serif leading-relaxed text-xl space-y-8">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 space-y-4">
+              <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-black/40 font-mono text-xs uppercase tracking-widest">Reconstructing the investigation...</p>
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap">
+              {fullStory}
+            </div>
+          )}
+          
+          <div className="py-12 flex justify-center">
+            <div className="w-24 h-px bg-black/20" />
+          </div>
+          <p className="text-center italic text-black/40">
+            End of the Investigation Record.
+          </p>
+        </article>
+      </div>
+    </motion.div>
+  );
+};
